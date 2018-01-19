@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "serve"
-    
+    "start": "budo index.js --live"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +17,7 @@
     "budo": "^10.0.4"
   },
   "dependencies": {
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "yo-yo": "^1.4.1"
   }
 }
