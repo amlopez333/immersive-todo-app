@@ -1,5 +1,38 @@
 var yo = require('yo-yo');
 var uuidv1 = require('uuid/v1');
+import EventEmitter from 'events';
+//import reducer from './reducer';
+const bus = new EventEmitter();
+
+const reducer = function(bus){
+  bus.on('addItem', function(todoVal){
+      var todo = {};
+      todo.id = uuidv1();
+      todo.value = todoVal
+      todo.status = 'pending';
+      state = [...state, todo];
+      console.log(state);
+      bus.emit('update');
+  });
+  bus.on('checkOrUncheck', function(itemId){
+      var updatedTodo = state.filter(function(item){
+          return item.id === itemId;
+      })[0]
+      
+      updatedTodo.status === 'done' ? updatedTodo.status = 'pending' : updatedTodo.status = 'done';
+      state = state.filter(function(item){
+          return item.id !== itemId;
+      }).concat([updatedTodo]);
+      bus.emit('update');
+  })
+}
+
+
+const getItemIndex = function(state, id){
+  return state.findIndex(function(item){
+    return id === item.id;
+  });
+}
 
 var state = [{id: uuidv1(),
   value: 'atun',
@@ -8,6 +41,15 @@ var state = [{id: uuidv1(),
     status: 'done'}] // start empty 
 var el = list(state, update, checkUncheckTodo)
  
+bus.on('update', function(){
+  var newList = list(state, addTodo, checkUncheckTodo)
+  console.log(state);
+  yo.update(el, newList)
+});
+
+reducer(bus);
+
+
 function list (items, onclick, del) {
   return yo
   `<div>
@@ -35,53 +77,22 @@ function list (items, onclick, del) {
       })}
   </div>`
 }
- 
-function update (ev) {
-  addTodo(ev)
-  
-  // construct a new list and efficiently diff+morph it into the one in the DOM 
-  var newList = list(state, update, checkUncheckTodo)
-  yo.update(el, newList)
+update();
+function update () {
+  bus.emit('update');
 }
-
 
 function addTodo(ev) {
     var todoVal = document.getElementById("todoVal");
-    var todo = {};
-    todo.id = uuidv1();
-    todo.value = todoVal.value;
-    todo.status = 'pending';
-    state = [
-        ...state,
-        todo
-    ];
-
-   
+    bus.emit('addItem', todoVal.value)
     todoVal.value = "";
-
     console.table(state);
 }
 
 
-  function checkUncheckTodo(ev) {
-    var id = ev.target.parentNode.getAttribute('id')
-    var updatedTodo = state.filter(function(item){
-      return item.id === id;
-    })[0]
-    updatedTodo.status === 'done' ? updatedTodo.status = 'pending' : updatedTodo.status = 'done';
-    state = state.filter(function(item){
-      return item.id !== id;
-    }).concat([updatedTodo]);
-    var newList = list(state, update, checkUncheckTodo);
-    yo.update(el, newList);
-  }
+function checkUncheckTodo(ev) {
+  var id = ev.target.parentNode.getAttribute('id')
+  bus.emit('checkOrUncheck', id);
+}
 
-  const getItemIndex = function(id){
-    return state.findIndex(function(item){
-      return id === item.id;
-    });
-  }
-
-
- 
 document.body.appendChild(el)

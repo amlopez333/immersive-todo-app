@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "budo index.js --live"
+    "start": "budo . --open --live --css=\"https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css\" --title=\"Todo\" -- -t [babelify --presets es2015]"
   },
   "keywords": [],
   "author": "",
